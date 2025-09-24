@@ -1,73 +1,99 @@
-let listaDeNumerosSorteados = [];
-let numeroLimite = 10;
-let numeroSecreto = gerarNumeroAleatorio();
-let tentativas = 1;
+let amigos = [];
+let sorteados = [];
 
-function exibirTextoNaTela(tag, texto) {
-    let campo = document.querySelector(tag);
-    campo.innerHTML = texto;
-    responsiveVoice.speak(texto, 'Brazilian Portuguese Female', {rate:1.2});
+function adicionarAmigo() {
+  const input = document.getElementById('amigo');
+  const nome = input.value.trim();
+
+  if (nome === "") {
+    alert("Digite um nome válido.");
+    input.focus();
+    return;
+  }
+
+  if (amigos.includes(nome)) {
+    alert("Esse nome já foi adicionado.");
+    input.value = "";
+    input.focus();
+    return;
+  }
+
+  amigos.push(nome);
+  input.value = "";
+  input.focus();
+  exibirListaAmigos();
 }
 
-function exibirMensagemInicial() {
-    exibirTextoNaTela('h1', 'Jogo do número secreto');
-    exibirTextoNaTela('p', 'Escolha um número entre 1 e 10');
+function exibirListaAmigos() {
+  const lista = document.getElementById('listaAmigos');
+  lista.innerHTML = "";
+
+  amigos.forEach((nome) => {
+    const li = document.createElement('li');
+    li.textContent = nome;
+    lista.appendChild(li);
+  });
 }
 
-exibirMensagemInicial();
+function iniciarSorteio() {
+  if (amigos.length < 2) {
+    alert("Adicione pelo menos dois amigos para iniciar o sorteio.");
+    return;
+  }
 
-function verificarChute() {
-    let chute = document.querySelector('input').value;
-    
-    if (chute == numeroSecreto) {
-        exibirTextoNaTela('h1', 'Acertou!');
-        let palavraTentativa = tentativas > 1 ? 'tentativas' : 'tentativa';
-        let mensagemTentativas = `Você descobriu o número secreto com ${tentativas} ${palavraTentativa}!`;
-        exibirTextoNaTela('p', mensagemTentativas);
-        document.getElementById('reiniciar').removeAttribute('disabled');
-    } else {
-        if (chute > numeroSecreto) {
-            exibirTextoNaTela('p', 'O número secreto é menor');
-        } else {
-            exibirTextoNaTela('p', 'O número secreto é maior');
-        }
-        tentativas++;
-        limparCampo();
-    }
+  document.getElementById('botaoSortearAmigo').style.display = 'none';
+  document.getElementById('botaoSortearProximo').style.display = 'inline-block';
+  sortearProximo();
 }
 
-function gerarNumeroAleatorio() {
-    let numeroEscolhido = parseInt(Math.random() * numeroLimite + 1);
-    let quantidadeDeElementosNaLista = listaDeNumerosSorteados.length;
+function sortearProximo() {
+  if (amigos.length <= 1) {
+    finalizarSorteio();
+    return;
+  }
 
-    if (quantidadeDeElementosNaLista == numeroLimite) {
-        listaDeNumerosSorteados = [];
-    }
-    if (listaDeNumerosSorteados.includes(numeroEscolhido)) {
-        return gerarNumeroAleatorio();
-    } else {
-        listaDeNumerosSorteados.push(numeroEscolhido);
-        console.log(listaDeNumerosSorteados)
-        return numeroEscolhido;
-    }
+  const sorteadoIndex = Math.floor(Math.random() * amigos.length);
+  const nomeSorteado = amigos[sorteadoIndex];
+
+  sorteados.push(nomeSorteado);
+  amigos.splice(sorteadoIndex, 1);
+
+  const resultado = document.getElementById('resultado');
+  const li = document.createElement('li');
+  li.textContent = `${nomeSorteado} 🎉`;
+  resultado.appendChild(li);
+
+  exibirListaAmigos();
+
+  if (amigos.length === 1) {
+    finalizarSorteio();
+  }
 }
 
-function limparCampo() {
-    chute = document.querySelector('input');
-    chute.value = '';
+function finalizarSorteio() {
+  const resultado = document.getElementById('resultado');
+
+  if (amigos.length === 1) {
+    const li = document.createElement('li');
+    li.textContent = `${amigos[0]} 🎉`;
+    resultado.appendChild(li);
+  }
+
+  document.getElementById('botaoSortearProximo').style.display = 'none';
+  document.getElementById('botaoReiniciar').style.display = 'inline-block';
 }
 
 function reiniciarJogo() {
-    numeroSecreto = gerarNumeroAleatorio();
-    limparCampo();
-    tentativas = 1;
-    exibirMensagemInicial();
-    document.getElementById('reiniciar').setAttribute('disabled', true)
+  amigos = [];
+  sorteados = [];
+  document.getElementById('listaAmigos').innerHTML = "";
+  document.getElementById('resultado').innerHTML = "";
+  document.getElementById('amigo').value = "";
+  document.getElementById('botaoSortearAmigo').style.display = 'inline-block';
+  document.getElementById('botaoSortearProximo').style.display = 'none';
+  document.getElementById('botaoReiniciar').style.display = 'none';
 }
 
-
-
-
-
-
-
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById('amigo').focus();
+});
